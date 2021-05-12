@@ -9,6 +9,7 @@ import json
 import sys
 
 from jinja2 import Environment, FileSystemLoader
+from typing import Union
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -42,7 +43,7 @@ def write_output(name, html):
     with open(os.path.join(OUTPUT_FOLDER, f'{name}.html'), 'w+') as f:
         f.write(html)
 
-def generate_html(file_path: str, jinja_env: Environment):
+def generate_html(file_path: str, jinja_env: Environment) -> Union[str, None]:
     metadata = read_file(file_path)
 
     try:
@@ -55,15 +56,18 @@ def generate_html(file_path: str, jinja_env: Environment):
     log.info(f"Generating template from {template_layout} layout")
     return template.render(metadata)  
 
+def create_html_file(file_path: str, html: str):
+    name, extension = os.path.splitext(os.path.basename(file_path))
+    write_output(name, html)
+
 def generate_site(folder_path):
     log.info(f"Generating site from {folder_path}")
     jinja_env = Environment(loader=FileSystemLoader(f'{folder_path}/layout'), trim_blocks=True)
     for file_path in list_files(folder_path):
         html = generate_html(file_path, jinja_env)
         if not html:
-            continue
-        name, extension = os.path.splitext(os.path.basename(file_path))
-        write_output(name, html)
+            continue        
+        create_html_file(file_path, html)
 
 
 def main():
