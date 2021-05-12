@@ -28,8 +28,8 @@ class TestGenerator(unittest.TestCase):
         self.assertEqual(expected_result, actual_result)
 
     def test_create_html_file(self):
-        create_html_file('test', 'mocked html')
-        self.assertEqual(True, os.path.exists('test/output/test.html'))
+        create_html_file('test', 'mocked html', 'output')
+        self.assertEqual(True, os.path.exists('output/test.html'))
 
     def test_read_file(self):
         actual_result = read_file('test/source/contact.rst')
