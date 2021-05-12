@@ -15,9 +15,6 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
 
-OUTPUT_FOLDER = 'test/output'
-
-
 def list_files(folder_path: str):
     for name in os.listdir(folder_path):
         base, ext = os.path.splitext(name)
@@ -39,8 +36,8 @@ def read_file(file_path) -> Dict[str, str]:
                 raw_metadata += line
     return dict(json.loads(raw_metadata), content=content)
 
-def write_output(name: str, html: str) -> None:
-    with open(os.path.join(OUTPUT_FOLDER, f'{name}.html'), 'w+') as f:
+def write_output(name: str, html: str, output_folder: str) -> None:
+    with open(os.path.join(output_folder, f'{name}.html'), 'w+') as f:
         f.write(html)
 
 def get_jinja_env(folder_path: str) -> Environment:
@@ -57,11 +54,11 @@ def generate_html(metadata: str, jinja_env: Environment) -> Union[str, None]:
     log.info(f"Generating template from {template_layout} layout")
     return template.render(metadata)  
 
-def create_html_file(file_path: str, html: str) -> None:
+def create_html_file(file_path: str, html: str, output_folder) -> None:
     name, extension = os.path.splitext(os.path.basename(file_path))
-    write_output(name, html)
+    write_output(name, html, output_folder)
 
-def generate_site(folder_path: str) -> None:
+def generate_site(folder_path: str, output_folder: str) -> None:
     log.info(f"Generating site from {folder_path}")
     jinja_env = get_jinja_env(folder_path)
     for file_path in list_files(folder_path):
@@ -69,13 +66,16 @@ def generate_site(folder_path: str) -> None:
         html = generate_html(metadata, jinja_env)
         if not html:
             continue        
-        create_html_file(file_path, html)
+        create_html_file(file_path, html, output_folder)
 
 
 def main():
-    if not os.path.exists(OUTPUT_FOLDER):
-        os.makedirs(OUTPUT_FOLDER)
-    generate_site(sys.argv[1])
+    if len(sys.argv) < 2:
+        raise Exception('Need at least 2 arguments')
+    output_folder = sys.argv[2]
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    generate_site(sys.argv[1], output_folder)
 
 
 if __name__ == '__main__':
